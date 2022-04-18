@@ -1,17 +1,17 @@
 /**
  * @section LICENSE
  * Copyright (c) 2014, Floris Chabert. All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -42,16 +42,20 @@ struct pool::impl {
 	bool barrier;
 	bool killed;
 
-	impl();
+	impl(size_t n);
 	void worker_thread(void);
 };
 
-pool::impl::impl() {
+pool::impl::impl(size_t n) {
 	killed = false;
 	barrier = false;
 	nready = 0;
 
-	for (size_t idx = 0; idx < std::thread::hardware_concurrency(); idx++) {
+  if (n == 0) {
+    n = std::thread::hardware_concurrency();
+  }
+
+	for (size_t idx = 0; idx < n; idx++) {
 		workers.push_back(std::thread(&impl::worker_thread, this));
 	}
 }
@@ -91,7 +95,7 @@ void pool::impl::worker_thread(void) {
 	}
 }
 
-pool::pool() : pimpl(new impl) {
+pool::pool(size_t n) : pimpl(new impl(n)) {
 }
 
 pool::~pool() {
@@ -105,7 +109,7 @@ pool::~pool() {
 	}
 }
 
-pool& pool::async(const std::function<void(void)>& job) throw(error) {
+pool& pool::async(const std::function<void(void)>& job) noexcept(false) {
 	if (!job) {
 		throw error("Bad job.");
 	}
@@ -118,7 +122,7 @@ pool& pool::async(const std::function<void(void)>& job) throw(error) {
 	return *this;
 }
 
-pool& pool::async(group &group, const std::function<void(void)>& job) throw(error) {
+pool& pool::async(group &group, const std::function<void(void)>& job) noexcept(false) {
 	if (!job) {
 		throw error("Bad job.");
 	}
@@ -133,7 +137,7 @@ pool& pool::async(group &group, const std::function<void(void)>& job) throw(erro
 	return *this;
 }
 
-pool& pool::sync(const std::function<void(void)>& job) throw(error) {
+pool& pool::sync(const std::function<void(void)>& job) noexcept(false) {
 	bool done = false;
 	std::mutex sync_mutex;
 	std::condition_variable sync_event;
@@ -158,7 +162,7 @@ pool& pool::sync(const std::function<void(void)>& job) throw(error) {
 	return *this;
 }
 
-pool& pool::sync(group &group, const std::function<void(void)>& job) throw(error) {
+pool& pool::sync(group &group, const std::function<void(void)>& job) noexcept(false) {
 	if (!job) {
 		throw error("Bad job.");
 	}
@@ -176,7 +180,7 @@ pool& pool::sync(group &group, const std::function<void(void)>& job) throw(error
 pool& pool::barrier() {
 	std::lock_guard<std::mutex> lock(pimpl->mutex);
 	pimpl->jobs.push(nullptr);
-	
+
 	pimpl->event.notify_one();
 
 	return *this;
@@ -192,7 +196,7 @@ pool& pool::wait() {
 	return *this;
 }
 
-pool& pool::apply(size_t iterations, const std::function<void(size_t idx)>& job) throw(error) {
+pool& pool::apply(size_t iterations, const std::function<void(size_t idx)>& job) noexcept(false) {
 	size_t num_done = 0;
 	std::mutex sync_mutex;
 	std::condition_variable sync_event;

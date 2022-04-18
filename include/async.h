@@ -1,17 +1,17 @@
 /**
  * @section LICENSE
  * Copyright (c) 2014, Floris Chabert. All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -39,7 +39,7 @@ public:
 	~group();
 
 	group& enter();
-	group& leave() throw(error);
+	group& leave() noexcept(false);
 
 	group& wait();
 
@@ -51,18 +51,18 @@ private:
 
 class pool {
 public:
-	pool();
+	pool(size_t n = 0);
 	~pool();
 
-	pool& async(const std::function<void(void)>&) throw(error);
-	pool& sync(const std::function<void(void)>&) throw(error);
+	pool& async(const std::function<void(void)>&) noexcept(false);
+	pool& sync(const std::function<void(void)>&) noexcept(false);
 
-	pool& async(group &group, const std::function<void(void)>&) throw(error);
-	pool& sync(group &group, const std::function<void(void)>&) throw(error);
+	pool& async(group &group, const std::function<void(void)>&) noexcept(false);
+	pool& sync(group &group, const std::function<void(void)>&) noexcept(false);
 
 	pool& barrier();
 
-	pool& apply(size_t iterations, const std::function<void(size_t idx)>&) throw(error);
+	pool& apply(size_t iterations, const std::function<void(size_t idx)>&) noexcept(false);
 
 	pool& wait();
 
@@ -77,11 +77,11 @@ public:
 	queue();
 	~queue();
 
-	queue& async(const std::function<void(void)>&) throw(error);
-	queue& sync(const std::function<void(void)>&) throw(error);
+	queue& async(const std::function<void(void)>&) noexcept(false);
+	queue& sync(const std::function<void(void)>&) noexcept(false);
 
-	queue& async(group &group, const std::function<void(void)>&) throw(error);
-	queue& sync(group &group, const std::function<void(void)>&) throw(error);
+	queue& async(group &group, const std::function<void(void)>&) noexcept(false);
+	queue& sync(group &group, const std::function<void(void)>&) noexcept(false);
 
 	queue& wait();
 
